@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/main_navigation_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() {
@@ -25,12 +25,12 @@ class _QuizAppState extends State<QuizApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Kuis Pemrograman Mobile USU',
+      title: 'Quiz App UTS PM',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: WelcomeScreen(
+      home: MainNavigationScreen(
         toggleTheme: _toggleTheme,
         isDarkMode: _isDarkMode,
       ),

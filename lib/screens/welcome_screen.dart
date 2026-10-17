@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/custom_button.dart';
-import 'quiz_screen.dart';
+import 'main_navigation_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
@@ -18,76 +18,72 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Quiz Pemrograman Mobile"),
+        title: const Text("Quiz App"),
         actions: [
           IconButton(
             icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
             onPressed: widget.toggleTheme,
-            tooltip: 'Ganti Tema',
           ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: screenWidth > 600 ? 500 : screenWidth),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Ilustrasi / Icon Utama
-                  const Icon(Icons.school, size: 90, color: Colors.indigo),
+                  Icon(Icons.school, size: 80, color: Theme.of(context).primaryColor),
                   const SizedBox(height: 20),
                   const Text(
-                    "Selamat Datang di Kuis IKLC!",
+                    "Selamat Datang!",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   const Text(
-                    "Masukkan nama Anda untuk memulai tantangan kuis Pemrograman Mobile.",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    "Masukkan nama Anda untuk mengakses berbagai pilihan subjek kuis.",
                     textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 24),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
                       labelText: "Nama Lengkap",
-                      hintText: "Contoh: Budi Santoso",
                       prefixIcon: const Icon(Icons.person),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Nama tidak boleh kosong!';
+                        return "Nama wajib diisi!";
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
-                  CustomButton(
-                    text: "Mulai Kuis",
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QuizScreen(
-                              userName: _nameController.text.trim(),
-                              toggleTheme: widget.toggleTheme,
-                              isDarkMode: widget.isDarkMode,
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: CustomButton(
+                      text: "Masuk ke Beranda",
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MainNavigationScreen(
+                                userName: _nameController.text.trim(),
+                                toggleTheme: widget.toggleTheme,
+                                isDarkMode: widget.isDarkMode,
+                              ),
                             ),
-                          ),
-                        );
-                      }
-                    },
+                          );
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),

@@ -1,69 +1,139 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import '../models/subject.dart';
 import '../models/question.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/option_card.dart';
 import 'result_screen.dart';
 
 class QuizScreen extends StatefulWidget {
+  final Subject subject;
   final String userName;
   final VoidCallback toggleTheme;
   final bool isDarkMode;
 
-  const QuizScreen({
-    Key? key,
-    required this.userName,
-    required this.toggleTheme,
-    required this.isDarkMode,
-  }) : super(key: key);
+  const QuizScreen({Key? key, required this.subject, required this.userName, required this.toggleTheme, required this.isDarkMode}) : super(key: key);
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
-// Menggunakan PageStorage / State Management sederhana agar aman saat rotasi layar
 class _QuizScreenState extends State<QuizScreen> {
   int _currentIndex = 0;
-  int _score = 0;
-  Map<int, int> _selectedAnswers = {}; // Menyimpan pilihan jawaban per nomor soal (mencegah hilang saat rotasi)
+  final Map<int, int> _selectedAnswers = {};
+
+  Timer? _timer;
+  int _secondsLeft = 30;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _secondsLeft = 30;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsLeft > 0) {
+        setState(() {
+          _secondsLeft--;
+        });
+      } else {
+        _nextQuestion();
+      }
+    });
+  }
+
+  void _nextQuestion() {
+    if (_currentIndex < widget.subject.questions.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+      _startTimer();
+    } else {
+      _timer?.cancel();
+      _finishQuiz();
+    }
+  }
+
+  void _finishQuiz() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultScreen(
+          subjectTitle: widget.subject.title,
+          questions: widget.subject.questions,
+          selectedAnswers: _selectedAnswers,
+          userName: widget.userName,
+          toggleTheme: widget.toggleTheme,
+          isDarkMode: widget.isDarkMode,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Konfirmasi Keluar"),
+        content: const Text("Apakah Anda ingin keluar? Jawaban yang telah diisi akan terhapus dan kuis diulang dari awal."),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text("Batal")),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text("Keluar", style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Question currentQuestion = dummyQuestions[_currentIndex];
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final Question currentQuestion = widget.subject.questions[_currentIndex];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Soal ${_currentIndex + 1} dari ${dummyQuestions.length}"),
-        actions: [
-          IconButton(
-            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            onPressed: widget.toggleTheme,
-          ),
-        ],
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: screenWidth > 600 ? 600 : screenWidth),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("${widget.subject.title} (${_currentIndex + 1}/10)"),
+          actions: [
+            IconButton(icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode), onPressed: widget.toggleTheme),
+          ],
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Linear Progress Indicator Dinamis
-                LinearProgressIndicator(
-                  value: (_currentIndex + 1) / dummyQuestions.length,
-                  backgroundColor: Colors.grey.withOpacity(0.3),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.indigo),
-                  minHeight: 8,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Progres: ${_currentIndex + 1}/10", style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Chip(
+                      avatar: const Icon(Icons.timer, size: 18, color: Colors.white),
+                      label: Text("$_secondsLeft detik", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      backgroundColor: _secondsLeft <= 5 ? Colors.red : Theme.of(context).primaryColor,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                // Pertanyaan
-                Text(
-                  currentQuestion.questionText,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: (_currentIndex + 1) / widget.subject.questions.length,
+                  backgroundColor: Colors.grey.withOpacity(0.3),
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                  minHeight: 6,
                 ),
                 const SizedBox(height: 20),
-                // List Pilihan Jawaban menggunakan Reusable Widget (OptionCard)
+                Text(currentQuestion.questionText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
                 ...List.generate(currentQuestion.options.length, (index) {
                   return OptionCard(
                     optionText: currentQuestion.options[index],
@@ -75,8 +145,7 @@ class _QuizScreenState extends State<QuizScreen> {
                     },
                   );
                 }),
-                const Spacer(),
-                // Tombol Navigasi Bawah
+                const SizedBox(height: 30),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -86,6 +155,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           setState(() {
                             _currentIndex--;
                           });
+                          _startTimer();
                         },
                         icon: const Icon(Icons.arrow_back),
                         label: const Text("Sebelumnya"),
@@ -93,43 +163,9 @@ class _QuizScreenState extends State<QuizScreen> {
                     else
                       const SizedBox.shrink(),
                     CustomButton(
-                      text: _currentIndex == dummyQuestions.length - 1 ? "Selesai" : "Selanjutnya",
-                      onPressed: _selectedAnswers.containsKey(_currentIndex)
-                          ? () {
-                        if (_currentIndex < dummyQuestions.length - 1) {
-                          setState(() {
-                            _currentIndex++;
-                          });
-                        } else {
-                          // Hitung Skor Akhir
-                          int finalScore = 0;
-                          _selectedAnswers.forEach((key, value) {
-                            if (dummyQuestions[key].correctIndex == value) {
-                              finalScore += 20; // Bobot per soal benar (100 / 5)
-                            }
-                          });
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ResultScreen(
-                                userName: widget.userName,
-                                score: finalScore,
-                                totalQuestions: dummyQuestions.length,
-                                toggleTheme: widget.toggleTheme,
-                                isDarkMode: widget.isDarkMode,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                          : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Pilih salah satu jawaban terlebih dahulu!"),
-                            duration: Duration(seconds: 1500),
-                          ),
-                        );
+                      text: _currentIndex == widget.subject.questions.length - 1 ? "Selesai" : "Selanjutnya",
+                      onPressed: () {
+                        _nextQuestion();
                       },
                     ),
                   ],

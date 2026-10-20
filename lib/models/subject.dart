@@ -4,6 +4,7 @@ import 'question.dart';
 class Subject {
   final String id;
   final String title;
+  final String category;
   final IconData icon;
   final Color color;
   final List<Question> questions;
@@ -11,19 +12,20 @@ class Subject {
   Subject({
     required this.id,
     required this.title,
+    required this.category,
     required this.icon,
     required this.color,
     required this.questions,
   });
 }
 
-// 10 Mata Kuliah Ilmu Komputer & Soal
 final List<Subject> dummySubjects = [
   Subject(
     id: 'mobile',
     title: 'Pemrograman Mobile',
+    category: 'Advanced',
     icon: Icons.phone_android,
-    color: Colors.blue,
+    color: const Color(0xFF1E88E5),
     questions: [
       Question(questionText: "Widget di Flutter yang bersifat immutable adalah?", options: ["StatefulWidget", "StatelessWidget", "Provider", "InheritedWidget"], correctIndex: 1),
       Question(questionText: "Bahasa pemrograman utama untuk Flutter adalah?", options: ["Java", "Kotlin", "Dart", "Swift"], correctIndex: 2),
@@ -40,8 +42,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'grafika',
     title: 'Grafika Komputer',
+    category: 'Intermediate',
     icon: Icons.computer,
-    color: Colors.indigo,
+    color: const Color(0xFF3949AB),
     questions: [
       Question(questionText: "Algoritma pembentukan garis raster yang menggunakan operasi bilangan bulat adalah?", options: ["Algoritma Bresenham", "Algoritma DDA", "Midpoint Circle", "Cohen-Sutherland"], correctIndex: 0),
       Question(questionText: "Transformasi geometri dasar yang memindahkan objek sejauh vektor tertentu disebut?", options: ["Scaling", "Rotation", "Translation", "Reflection"], correctIndex: 2),
@@ -58,8 +61,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'cloud',
     title: 'Cloud Computing',
+    category: 'Advanced',
     icon: Icons.cloud,
-    color: Colors.lightBlue,
+    color: const Color(0xFF00ACC1),
     questions: [
       Question(questionText: "Layanan Cloud di mana pengguna menyewa infrastruktur virtual secara utuh disebut?", options: ["SaaS", "PaaS", "IaaS", "DaaS"], correctIndex: 2),
       Question(questionText: "Contoh penyedia layanan Cloud Computing (Cloud Provider) populer adalah?", options: ["AWS, Google Cloud, Azure", "Microsoft Word, Excel", "Photoshop, Premiere", "MySQL, PostgreSQL"], correctIndex: 0),
@@ -76,8 +80,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'math_base',
     title: 'Matematika Dasar',
+    category: 'Fundamental',
     icon: Icons.calculate,
-    color: Colors.cyan,
+    color: const Color(0xFF00897B),
     questions: [
       Question(questionText: "Berapa hasil dari 15 + (12 × 2)?", options: ["39", "54", "27", "42"], correctIndex: 0),
       Question(questionText: "Akar kuadrat dari 144 adalah?", options: ["10", "11", "12", "14"], correctIndex: 2),
@@ -94,8 +99,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'database',
     title: 'Basis Data',
+    category: 'Core',
     icon: Icons.storage,
-    color: Colors.blueAccent,
+    color: const Color(0xFF5E35B1),
     questions: [
       Question(questionText: "Bahasa standar yang digunakan untuk mengakses basis data relasional adalah?", options: ["HTML", "SQL", "XML", "PHP"], correctIndex: 1),
       Question(questionText: "Atribut atau kolom yang menjadi pengenal unik pada suatu tabel disebut?", options: ["Foreign Key", "Primary Key", "Candidate Key", "Super Key"], correctIndex: 1),
@@ -112,8 +118,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'os',
     title: 'Sistem Operasi',
+    category: 'Core',
     icon: Icons.settings_applications,
-    color: Colors.deepPurple,
+    color: const Color(0xFF8E24AA),
     questions: [
       Question(questionText: "Komponen inti sistem operasi yang bertindak sebagai jembatan antara aplikasi dan hardware adalah?", options: ["Shell", "Kernel", "Driver", "Compiler"], correctIndex: 1),
       Question(questionText: "Program yang sedang dieksekusi di dalam memori disebut?", options: ["Thread", "Process", "Job", "Task"], correctIndex: 1),
@@ -130,8 +137,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'algo',
     title: 'Algoritma dan Pemrograman',
+    category: 'Fundamental',
     icon: Icons.code,
-    color: Colors.teal,
+    color: const Color(0xFF00897B),
     questions: [
       Question(questionText: "Notasi penulisan algoritma yang menyerupai bahasa pemrograman tingkat tinggi disebut?", options: ["Flowchart", "Pseudocode", "Diagram", "Source Code"], correctIndex: 1),
       Question(questionText: "Struktur kontrol percabangan di dalam bahasa pemrograman umumnya menggunakan?", options: ["for / while", "if / switch", "array / list", "function / procedure"], correctIndex: 1),
@@ -148,8 +156,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'basic_prog',
     title: 'Dasar Pemrograman',
+    category: 'Fundamental',
     icon: Icons.terminal,
-    color: Colors.green,
+    color: const Color(0xFF2E7D32),
     questions: [
       Question(questionText: "Tipe data untuk menyimpan nilai pecahan/desimal adalah?", options: ["int", "string", "float / double", "bool"], correctIndex: 2),
       Question(questionText: "Tipe data yang hanya bernilai benar (true) atau salah (false) adalah?", options: ["char", "boolean", "integer", "string"], correctIndex: 1),
@@ -166,8 +175,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'oop',
     title: 'Pemrograman Berorientasi Objek',
+    category: 'Core',
     icon: Icons.hub,
-    color: Colors.orange,
+    color: const Color(0xFFEF6C00),
     questions: [
       Question(questionText: "Pilar PBO (OOP) yang menyembunyikan detail implementasi data di dalam kelas adalah?", options: ["Inheritance", "Polimorfisme", "Encapsulation", "Abstraksi"], correctIndex: 2),
       Question(questionText: "Konsep di mana kelas anak mewarisi properti dan method dari kelas induk disebut?", options: ["Polimorfisme", "Inheritance", "Encapsulation", "Instantiation"], correctIndex: 1),
@@ -184,8 +194,9 @@ final List<Subject> dummySubjects = [
   Subject(
     id: 'network',
     title: 'Jaringan Komputer',
+    category: 'Advanced',
     icon: Icons.router,
-    color: Colors.redAccent,
+    color: const Color(0xFFC62828),
     questions: [
       Question(questionText: "Model referensi arsitektur jaringan komputer standar internasional yang memiliki 7 layer adalah?", options: ["TCP/IP Model", "OSI Model", "IEEE Model", "Cisco Model"], correctIndex: 1),
       Question(questionText: "Perangkat jaringan yang bekerja pada Layer 3 (Network Layer) untuk meneruskan paket data antar network adalah?", options: ["Hub", "Switch", "Router", "Repeater"], correctIndex: 2),

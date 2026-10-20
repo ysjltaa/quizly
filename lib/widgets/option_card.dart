@@ -13,24 +13,39 @@ class OptionCard extends StatelessWidget {
     final primaryColor = Theme.of(context).primaryColor;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           child: Ink(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             decoration: BoxDecoration(
-              color: isSelected ? primaryColor.withOpacity(0.15) : (isDarkMode ? const Color(0xFF1E1E1E) : Colors.white),
-              border: Border.all(color: isSelected ? primaryColor : Colors.grey.withOpacity(0.3), width: isSelected ? 2 : 1),
-              borderRadius: BorderRadius.circular(12),
+              color: isSelected ? primaryColor.withOpacity(0.12) : (isDarkMode ? const Color(0xFF1E293B) : Colors.white),
+              border: Border.all(
+                color: isSelected ? primaryColor : Colors.grey.withOpacity(0.3),
+                width: isSelected ? 2 : 1,
+              ),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               children: [
-                Icon(isSelected ? Icons.radio_button_checked : Icons.radio_button_off, color: isSelected ? primaryColor : Colors.grey, size: 20),
-                const SizedBox(width: 12),
-                Expanded(child: Text(optionText, style: TextStyle(fontSize: 14, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal))),
+                Icon(
+                  isSelected ? Icons.check_circle : Icons.radio_button_unchecked,
+                  color: isSelected ? primaryColor : Colors.grey,
+                  size: 22,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    optionText,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

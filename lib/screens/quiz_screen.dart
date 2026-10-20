@@ -12,7 +12,13 @@ class QuizScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
   final bool isDarkMode;
 
-  const QuizScreen({Key? key, required this.subject, required this.userName, required this.toggleTheme, required this.isDarkMode}) : super(key: key);
+  const QuizScreen({
+    Key? key,
+    required this.subject,
+    required this.userName,
+    required this.toggleTheme,
+    required this.isDarkMode,
+  }) : super(key: key);
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -20,6 +26,8 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   int _currentIndex = 0;
+
+  // State Management: Menyimpan progres jawaban pengguna agar tidak hilang saat rotasi/pindah halaman
   final Map<int, int> _selectedAnswers = {};
 
   Timer? _timer;
@@ -35,12 +43,14 @@ class _QuizScreenState extends State<QuizScreen> {
     _timer?.cancel();
     _secondsLeft = 30;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_secondsLeft > 0) {
-        setState(() {
-          _secondsLeft--;
-        });
-      } else {
-        _nextQuestion();
+      if (mounted) {
+        if (_secondsLeft > 0) {
+          setState(() {
+            _secondsLeft--;
+          });
+        } else {
+          _nextQuestion();
+        }
       }
     });
   }
@@ -83,11 +93,20 @@ class _QuizScreenState extends State<QuizScreen> {
     final shouldPop = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Konfirmasi Keluar"),
-        content: const Text("Apakah Anda ingin keluar? Jawaban yang telah diisi akan terhapus dan kuis diulang dari awal."),
+        title: const Text("Exit Quiz?"),
+        content: const Text("Your current quiz attempt will be ended and submitted with existing answers."),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text("Batal")),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text("Keluar", style: TextStyle(color: Colors.red))),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              _timer?.cancel();
+              _finishQuiz(); // Menyerahkan progres jawaban yang sudah terisi saat ini
+            },
+            child: const Text("Submit & Exit", style: TextStyle(color: Colors.redAccent)),
+          ),
         ],
       ),
     );
@@ -97,6 +116,8 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     final Question currentQuestion = widget.subject.questions[_currentIndex];
+    final isDark = widget.isDarkMode;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -104,36 +125,97 @@ class _QuizScreenState extends State<QuizScreen> {
         appBar: AppBar(
           title: Text("${widget.subject.title} (${_currentIndex + 1}/10)"),
           actions: [
-            IconButton(icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode), onPressed: widget.toggleTheme),
+            IconButton(
+              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+              onPressed: widget.toggleTheme,
+            ),
           ],
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(18.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Visual Dynamic Timer & Soal Indicator
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Progres: ${_currentIndex + 1}/10", style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Chip(
-                      avatar: const Icon(Icons.timer, size: 18, color: Colors.white),
-                      label: Text("$_secondsLeft detik", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      backgroundColor: _secondsLeft <= 5 ? Colors.red : Theme.of(context).primaryColor,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Question ${_currentIndex + 1} of 10",
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const Text("Select one answer and proceed", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      ],
+                    ),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 48,
+                          height: 48,
+                          child: CircularProgressIndicator(
+                            value: _secondsLeft / 30,
+                            strokeWidth: 5,
+                            backgroundColor: Colors.grey.withOpacity(0.2),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              _secondsLeft <= 5 ? Colors.redAccent : primaryColor,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          "$_secondsLeft",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: _secondsLeft <= 5 ? Colors.redAccent : null,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: (_currentIndex + 1) / widget.subject.questions.length,
-                  backgroundColor: Colors.grey.withOpacity(0.3),
-                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                  minHeight: 6,
+                const SizedBox(height: 16),
+
+                // Floating Card Soal
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: primaryColor.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "SOAL NO. ${_currentIndex + 1}",
+                          style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 11),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        currentQuestion.questionText,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, height: 1.4),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 20),
-                Text(currentQuestion.questionText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
+
+                // Pilihan Jawaban (Hanya Maju, Tidak Bisa Kembali)
                 ...List.generate(currentQuestion.options.length, (index) {
                   return OptionCard(
                     optionText: currentQuestion.options[index],
@@ -145,30 +227,17 @@ class _QuizScreenState extends State<QuizScreen> {
                     },
                   );
                 }),
-                const SizedBox(height: 30),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (_currentIndex > 0)
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _currentIndex--;
-                          });
-                          _startTimer();
-                        },
-                        icon: const Icon(Icons.arrow_back),
-                        label: const Text("Sebelumnya"),
-                      )
-                    else
-                      const SizedBox.shrink(),
-                    CustomButton(
-                      text: _currentIndex == widget.subject.questions.length - 1 ? "Selesai" : "Selanjutnya",
-                      onPressed: () {
-                        _nextQuestion();
-                      },
-                    ),
-                  ],
+                const SizedBox(height: 28),
+
+                // Tombol aksi tunggal (Tanpa Tombol Previous)
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    text: _currentIndex == widget.subject.questions.length - 1 ? "Finish Quiz" : "Next Question",
+                    onPressed: () {
+                      _nextQuestion();
+                    },
+                  ),
                 ),
               ],
             ),

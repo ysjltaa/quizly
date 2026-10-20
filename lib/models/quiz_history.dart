@@ -16,10 +16,9 @@ class QuizHistory {
 
 List<QuizHistory> globalQuizHistory = [];
 
-// Status Autentikasi Global Sederhana
 class UserAuth {
   static bool isLoggedIn = false;
-  static String currentUsername = "Tamu";
+  static String currentUsername = "";
   static String registeredEmail = "";
   static String registeredPassword = "";
 }

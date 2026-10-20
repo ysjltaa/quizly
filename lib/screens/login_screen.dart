@@ -7,14 +7,12 @@ class LoginScreen extends StatefulWidget {
   final VoidCallback toggleTheme;
   final bool isDarkMode;
   final String initialEmail;
-  final VoidCallback onLoginSuccess;
 
   const LoginScreen({
     Key? key,
     required this.toggleTheme,
     required this.isDarkMode,
     this.initialEmail = '',
-    required this.onLoginSuccess,
   }) : super(key: key);
 
   @override
@@ -34,16 +32,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login Akun"),
-        actions: [
-          IconButton(
-            icon: Icon(widget.isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            onPressed: widget.toggleTheme,
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text("Sign In")),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -53,12 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_outline, size: 80, color: Theme.of(context).primaryColor),
+                  Icon(Icons.lock_outline, size: 80, color: primaryColor),
                   const SizedBox(height: 20),
-                  const Text("Silakan Login", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  const Text("Welcome Back", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   const Text(
-                    "Masukkan email dan password Anda untuk masuk.",
+                    "Please sign in to continue your quiz journey.",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey, fontSize: 13),
                   ),
@@ -66,15 +58,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
-                      labelText: "Email",
+                      labelText: "Email Address",
                       prefixIcon: const Icon(Icons.email),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return "Email wajib diisi";
-                      // Opsional: Cek apakah email terdaftar (jika sudah ada akun yang dibuat)
+                      if (v == null || v.isEmpty) return "Email is required";
                       if (UserAuth.registeredEmail.isNotEmpty && v.trim() != UserAuth.registeredEmail) {
-                        return "Email belum terdaftar / tidak sesuai";
+                        return "Email not registered";
                       }
                       return null;
                     },
@@ -86,56 +77,70 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: "Password",
                       prefixIcon: const Icon(Icons.vpn_key),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                     validator: (v) {
-                      if (v == null || v.isEmpty) return "Password wajib diisi";
-
-                      // SINKRONISASI: Cek kecocokan password dengan yang di-register
+                      if (v == null || v.isEmpty) return "Password is required";
                       if (UserAuth.registeredPassword.isNotEmpty && v.trim() != UserAuth.registeredPassword) {
-                        return "Password salah!";
+                        return "Incorrect password!";
                       }
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: CustomButton(
-                      text: "Login",
+                      text: "Sign In",
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           UserAuth.isLoggedIn = true;
                           UserAuth.registeredEmail = _emailController.text.trim();
-
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Login Berhasil!")),
+                            const SnackBar(content: Text("Login Successful!")),
                           );
-
-                          Navigator.pop(context, true); // Kembali ke halaman sebelumnya dengan status sukses
+                          Navigator.pop(context, true);
                         }
                       },
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () async {
-                      final registeredEmail = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RegisterScreen(
-                            toggleTheme: widget.toggleTheme,
-                            isDarkMode: widget.isDarkMode,
+                  const SizedBox(height: 24),
+
+                  // Tampilan Sign Up tanpa underline, hanya perbedaan warna & tebal
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Don't have an account? ",
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          final registeredEmail = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RegisterScreen(
+                                toggleTheme: widget.toggleTheme,
+                                isDarkMode: widget.isDarkMode,
+                              ),
+                            ),
+                          );
+                          if (registeredEmail != null && registeredEmail is String) {
+                            setState(() {
+                              _emailController.text = registeredEmail;
+                            });
+                          }
+                        },
+                        child: Text(
+                          "Sign Up",
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
                           ),
                         ),
-                      );
-                      if (registeredEmail != null && registeredEmail is String) {
-                        setState(() {
-                          _emailController.text = registeredEmail;
-                        });
-                      }
-                    },
-                    child: const Text("Belum punya akun? Register di sini"),
+                      ),
+                    ],
                   ),
                 ],
               ),

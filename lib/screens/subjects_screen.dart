@@ -46,99 +46,120 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Subjects")),
+      appBar: AppBar(title: const Text("Subjects Catalog"), elevation: 0),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           child: Column(
             children: [
               // Search Input Field
               TextField(
                 onChanged: (val) => setState(() => _searchQuery = val),
                 decoration: InputDecoration(
-                  hintText: "Search subject ",
+                  hintText: "Search subject...",
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: isDark ? Colors.white12 : Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: isDark ? Colors.white12 : Colors.grey.shade300),
                   ),
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
 
-              // Grid Subjek Catalog
+              // Grid Catalog Subjek dengan mainAxisExtent agar ukuran card pas dan rapi
               Expanded(
                 child: searchResults.isEmpty
                     ? const Center(child: Text("No subject found matching query.", style: TextStyle(color: Colors.grey)))
                     : GridView.builder(
                   itemCount: searchResults.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
-                    childAspectRatio: 0.8,
+                    crossAxisCount: 2,           // 2 Kolom ke samping
+                    crossAxisSpacing: 12,        // Jarak antar kolom
+                    mainAxisSpacing: 12,         // Jarak antar baris
+                    mainAxisExtent: 185,         // Mengunci tinggi card secara konsisten & pas tanpa ruang kosong
                   ),
                   itemBuilder: (context, index) {
                     final sub = searchResults[index];
                     return Container(
                       decoration: BoxDecoration(
                         color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(14.0),
+                        padding: const EdgeInsets.all(10.0),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: sub.color.withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(6),
+                            // Bagian Atas: Badge Kategori & Ikon
+                            Column(
+                              children: [
+                                Align(
+                                  alignment: Alignment.topRight,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: sub.color.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      sub.category,
+                                      style: TextStyle(color: sub.color, fontSize: 8, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
                                 ),
-                                child: Text(
-                                  sub.category,
-                                  style: TextStyle(color: sub.color, fontSize: 9, fontWeight: FontWeight.bold),
+                                const SizedBox(height: 2),
+                                Container(
+                                  padding: const EdgeInsets.all(7),
+                                  decoration: BoxDecoration(
+                                    color: sub.color.withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(sub.icon, color: sub.color, size: 22),
                                 ),
-                              ),
+                                const SizedBox(height: 6),
+                                // Judul Mata Kuliah
+                                Text(
+                                  sub.title,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, height: 1.2),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  "10 Questions",
+                                  style: TextStyle(color: Colors.grey, fontSize: 9.5),
+                                ),
+                              ],
                             ),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: sub.color.withOpacity(0.15),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(sub.icon, color: sub.color, size: 32),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              sub.title,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                            const SizedBox(height: 2),
-                            const Text("10 Questions", style: TextStyle(color: Colors.grey, fontSize: 11)),
-                            const Spacer(),
+
+                            // Bagian Bawah: Tombol Enroll
                             SizedBox(
                               width: double.infinity,
-                              height: 36,
+                              height: 30,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Theme.of(context).primaryColor,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: EdgeInsets.zero,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
                                 onPressed: () => _checkAuthAndNavigate(
                                   context,
@@ -149,7 +170,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                                     isDarkMode: widget.isDarkMode,
                                   ),
                                 ),
-                                child: const Text("Enroll", style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text("Enroll", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               ),
                             ),
                           ],

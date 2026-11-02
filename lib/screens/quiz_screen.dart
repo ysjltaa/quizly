@@ -24,14 +24,18 @@ class QuizScreen extends StatefulWidget {
   State<QuizScreen> createState() => _QuizScreenState();
 }
 
-class _QuizScreenState extends State<QuizScreen> {
+// Menggunakan AutomaticKeepAliveClientMixin agar state/progres kuis tidak hancur saat berpindah tab/halaman
+class _QuizScreenState extends State<QuizScreen> with AutomaticKeepAliveClientMixin {
   int _currentIndex = 0;
 
-  // State Management: Menyimpan progres jawaban pengguna agar tidak hilang saat rotasi/pindah halaman
+  // State Management: Menyimpan progres pilihan jawaban agar tidak hilang
   final Map<int, int> _selectedAnswers = {};
 
   Timer? _timer;
   int _secondsLeft = 30;
+
+  @override
+  bool get wantKeepAlive => true; // Mempertahankan state agar tidak hilang saat navigasi
 
   @override
   void initState() {
@@ -41,7 +45,6 @@ class _QuizScreenState extends State<QuizScreen> {
 
   void _startTimer() {
     _timer?.cancel();
-    _secondsLeft = 30;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         if (_secondsLeft > 0) {
@@ -59,8 +62,8 @@ class _QuizScreenState extends State<QuizScreen> {
     if (_currentIndex < widget.subject.questions.length - 1) {
       setState(() {
         _currentIndex++;
+        _secondsLeft = 30; // Reset timer untuk soal berikutnya
       });
-      _startTimer();
     } else {
       _timer?.cancel();
       _finishQuiz();
@@ -90,31 +93,34 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<bool> _onWillPop() async {
-    final shouldPop = await showDialog<bool>(
+    final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Exit Quiz?"),
-        content: const Text("Your current quiz attempt will be ended and submitted with existing answers."),
+        content: const Text("Your progress will be submitted with your current answers."),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              _timer?.cancel();
-              _finishQuiz(); // Menyerahkan progres jawaban yang sudah terisi saat ini
-            },
+            onPressed: () => Navigator.of(context).pop(true),
             child: const Text("Submit & Exit", style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
     );
-    return shouldPop ?? false;
+
+    if (shouldExit == true) {
+      _timer?.cancel();
+      _finishQuiz();
+    }
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Wajib dipanggil untuk AutomaticKeepAliveClientMixin
     final Question currentQuestion = widget.subject.questions[_currentIndex];
     final isDark = widget.isDarkMode;
     final primaryColor = Theme.of(context).primaryColor;
@@ -137,7 +143,7 @@ class _QuizScreenState extends State<QuizScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Visual Dynamic Timer & Soal Indicator
+                // Indikator Soal & Timer
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -180,7 +186,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Floating Card Soal
+                // Card Soal
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -215,7 +221,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Pilihan Jawaban (Hanya Maju, Tidak Bisa Kembali)
+                // Pilihan Jawaban (Tanpa tombol Previous, hanya maju)
                 ...List.generate(currentQuestion.options.length, (index) {
                   return OptionCard(
                     optionText: currentQuestion.options[index],
@@ -229,7 +235,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 }),
                 const SizedBox(height: 28),
 
-                // Tombol aksi tunggal (Tanpa Tombol Previous)
+                // Tombol Next / Finish
                 SizedBox(
                   width: double.infinity,
                   child: CustomButton(

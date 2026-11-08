@@ -41,12 +41,15 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   Widget build(BuildContext context) {
     final isDark = widget.isDarkMode;
 
+    // Jumlah kolom mengikuti lebar layar (target ±200 per kartu), minimal 2 kolom
+    final columns = (MediaQuery.sizeOf(context).width / 200).floor().clamp(2, 6).toInt();
+
     final searchResults = dummySubjects
         .where((s) => s.title.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Subjects Catalog"), elevation: 0),
+      appBar: AppBar(title: const Text("Subjects"), elevation: 0),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -73,17 +76,17 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Grid Catalog Subjek dengan mainAxisExtent agar ukuran card pas dan rapi
+              // Grid Catalog Subjek
               Expanded(
                 child: searchResults.isEmpty
                     ? const Center(child: Text("No subject found matching query.", style: TextStyle(color: Colors.grey)))
                     : GridView.builder(
                   itemCount: searchResults.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,           // 2 Kolom ke samping
-                    crossAxisSpacing: 12,        // Jarak antar kolom
-                    mainAxisSpacing: 12,         // Jarak antar baris
-                    mainAxisExtent: 185,         // Mengunci tinggi card secara konsisten & pas tanpa ruang kosong
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    mainAxisExtent: 185,
                   ),
                   itemBuilder: (context, index) {
                     final sub = searchResults[index];

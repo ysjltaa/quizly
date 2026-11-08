@@ -1,6 +1,6 @@
-| *Nama* | Yesi Jelita Sinaga |
-| *NIM* | 241401071|
-| *Lab* | 4|
+**Nama:  Yesi Jelita Sinaga 
+NIM:  241401071
+Lab:  4**
 
 ### Quizly
 ### Deskripsi Singkat
@@ -26,6 +26,7 @@ Quizly adalah aplikasi kuis untuk menguji pemahaman 10 mata kuliah Ilmu Komputer
 - State management: `setState` untuk state lokal, dan `ChangeNotifier` (`ThemeController`) untuk tema
 - Data: lokal dan dummy (tanpa database)
 
+```
 ## Struktur Proyek
 lib/
 ├── main.dart
@@ -56,6 +57,7 @@ lib/
     └── option_card.dart
 assets/
 └── images/themes/
+```
 
 ## Cara Menjalankan
 ```bash
@@ -71,11 +73,10 @@ flutter run -d chrome
 ```
 
 ## Dokumentasi
-
 ### Credit Aset
 | Aset | Sumber |
 |---|---|
-|Google Fonts|
+| Font Poppins | Google Fonts (SIL Open Font License) |
 | Ikon | Material Icons |
 | Gambar tema Ocean | https://pin.it/1veb45XDQ |
 | Gambar tema Campfire | https://pin.it/1lbSYcWuY) |

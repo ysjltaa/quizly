@@ -13,6 +13,17 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
+  Color _resultColor(String? r) {
+    switch (r) {
+      case 'Win':
+        return Colors.green;
+      case 'Draw':
+        return Colors.orange;
+      default:
+        return Colors.redAccent; // Lose / Forfeit
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!UserAuth.isLoggedIn) {
@@ -52,25 +63,79 @@ class _HistoryScreenState extends State<HistoryScreen> {
       );
     }
 
+    // Terbaru di atas
+    final items = [...globalQuizHistory]..sort((a, b) => b.date.compareTo(a.date));
+    final primary = Theme.of(context).primaryColor;
+
     return Scaffold(
       appBar: AppBar(title: const Text("Quiz History")),
       body: SafeArea(
-        child: globalQuizHistory.isEmpty
+        child: items.isEmpty
             ? const Center(child: Text("No quiz history recorded yet.", style: TextStyle(color: Colors.grey)))
             : ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: globalQuizHistory.length,
+          itemCount: items.length,
           itemBuilder: (context, index) {
-            final item = globalQuizHistory[index];
+            final item = items[index];
+            final dateStr = "${item.date.day}/${item.date.month}/${item.date.year}";
+
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: CircleAvatar(backgroundColor: Theme.of(context).primaryColor.withOpacity(0.15), child: Icon(Icons.assignment_turned_in, color: Theme.of(context).primaryColor)),
-                title: Text(item.subjectTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text("Correct: ${item.correctCount}/${item.totalQuestions} • ${item.date.day}/${item.date.month}/${item.date.year}"),
-                trailing: Text("Score: ${item.score}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
+                leading: CircleAvatar(
+                  backgroundColor: primary.withOpacity(0.15),
+                  child: Icon(item.isRace ? Icons.flag_rounded : Icons.assignment_turned_in, color: primary),
+                ),
+                title: Row(
+                  children: [
+                    Flexible(
+                      child: Text(item.subjectTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    if (item.isRace) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: primary.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text("RACE",
+                            style: TextStyle(color: primary, fontSize: 9, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ],
+                ),
+                subtitle: item.isRace
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 2),
+                    Text("vs ${item.rivalName ?? '-'} • $dateStr"),
+                    Text("Correct: ${item.correctCount}/${item.totalQuestions}"),
+                  ],
+                )
+                    : Text("Correct: ${item.correctCount}/${item.totalQuestions} • $dateStr"),
+                trailing: item.isRace
+                    ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(item.raceResult ?? '-',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: _resultColor(item.raceResult))),
+                    Text("${item.raceScore ?? 0} pts",
+                        style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  ],
+                )
+                    : Text("Score: ${item.score}",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: primary)),
               ),
             );
           },
